@@ -3,304 +3,352 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom Dog Tag Creator</title>
+    <title>Pro Dog Tag Creator</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
+            background-color: #f0f2f5;
+            color: #1c1e21;
             text-align: center;
             padding: 20px;
             margin: 0;
+            overscroll-behavior-y: contain; 
         }
         .container {
             max-width: 600px;
             margin: 0 auto;
             background: white;
             padding: 30px 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
         }
-        h1 { color: #2c3e50; font-size: 1.5em; }
+        h1 { color: #355e93; font-size: 1.6em; margin-bottom: 10px; }
         
         .instructions {
-            background-color: #e8f4f8;
+            background-color: #f8fafc;
+            border-left: 5px solid #355e93;
             padding: 15px;
-            border-radius: 8px;
+            border-radius: 4px;
             margin-bottom: 20px;
             text-align: left;
             font-size: 0.9em;
+            line-height: 1.4;
         }
 
-        /* TRUE DOG TAG SHAPE (Pill/Oval based on 1.1875 x 2.4375) */
+        /* BLEED CONTAINER (230px x 430px) */
         .dog-tag-container {
-            width: 195px; 
-            height: 400px;
-            /* 195px / 2 = 97.5px. This creates a perfect half-circle top and bottom (pill shape) */
-            border-radius: 97.5px; 
+            width: 230px; 
+            height: 430px;
+            border-radius: 115px; 
             border: 4px solid #bdc3c7;
             margin: 20px auto;
             position: relative;
             overflow: hidden;
-            background-color: #ffffff; /* Default background */
+            background-color: #ffffff;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background-color 0.3s;
+            touch-action: none; 
         }
         
-        /* The Hole for the chain */
+        /* The Hole */
         .dog-tag-container::before {
             content: '';
             position: absolute;
-            top: 15px;
+            top: 32px;
             left: 50%;
             transform: translateX(-50%);
             width: 20px;
             height: 20px;
-            background-color: #f4f4f9; /* Matches page background to look like a hole */
+            background-color: #f0f2f5; 
             border-radius: 50%;
             border: 2px solid #bdc3c7;
             z-index: 10;
+            pointer-events: none; 
         }
 
-        #preview-image {
+        /* Safe Zone (Physical Tag Edges) */
+        .dog-tag-container::after {
+            content: '';
+            position: absolute;
+            top: 20px; bottom: 20px; left: 20px; right: 20px;
+            border: 2px dashed rgba(255, 255, 255, 0.7);
+            border-radius: 95px;
+            pointer-events: none;
+            z-index: 5;
+            display: none; 
+        }
+        .dog-tag-container.active::after { display: block; }
+
+        /* Background Image Layer */
+        #bg-image-preview {
+            position: absolute;
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Default: fills to edges */
-            display: none;
+            object-fit: cover;
             z-index: 1;
+            display: none;
         }
 
-        .controls {
+        /* Foreground/Main Photo Layer */
+        #photo-preview {
+            position: absolute;
+            display: none;
+            z-index: 2;
+            transform-origin: top left;
+        }
+        
+        .drag-cursor { cursor: grab; }
+        .drag-cursor:active { cursor: grabbing; }
+
+        .control-section {
             margin: 15px 0;
-            padding: 10px;
+            padding: 15px;
             background: #f9f9f9;
-            border-radius: 8px;
-            display: none; /* Hidden until photo is uploaded */
+            border-radius: 10px;
+            border: 1px solid #ddd;
         }
 
         .bg-colors {
             display: flex;
             justify-content: center;
-            gap: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
             margin-top: 10px;
         }
         .color-swatch {
-            width: 30px; height: 30px;
-            border-radius: 50%;
-            border: 2px solid #ccc;
+            width: 28px; height: 28px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
             cursor: pointer;
+            transition: transform 0.2s;
         }
+        .color-swatch:hover { transform: scale(1.1); }
 
-        .upload-btn-wrapper { margin-bottom: 10px; }
+        .btn-group { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
         
         .btn {
-            border: 2px solid #2980b9;
-            color: #2980b9;
+            border: 2px solid #355e93;
+            color: #355e93;
             background-color: white;
-            padding: 10px 20px;
+            padding: 10px 15px;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 0.9em;
             font-weight: bold;
             cursor: pointer;
-            width: 100%;
-            max-width: 250px;
-            margin: 5px;
+            flex: 1;
+            min-width: 140px;
         }
-        .btn:hover { background-color: #2980b9; color: white; }
+        .btn:hover { background-color: #355e93; color: white; }
+        input[type=file] { display: none; }
         
-        .upload-btn-wrapper input[type=file] {
-            display: none;
-        }
-
-        .save-btn {
-            background-color: #e67e22;
-            color: white;
-            border: none;
-        }
+        .save-btn { background-color: #e67e22; color: white; border: none; flex: 2; }
         .save-btn:hover { background-color: #d35400; }
-
+        
         .timetap-btn {
             background-color: #27ae60;
             color: white;
-            border: none;
+            text-decoration: none;
+            padding: 15px;
+            border-radius: 8px;
+            display: block;
+            margin-top: 20px;
+            font-weight: bold;
         }
-        .timetap-btn:hover { background-color: #219653; }
-        
-        /* Hidden canvas for image generation */
-        #export-canvas { display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🇺🇸 Custom Dog Tag Creator</h1>
+    <h1>🇺🇸 Pro Dog Tag Creator</h1>
     
     <div class="instructions">
-        <strong>1.</strong> Tap "Choose Photo" to upload your picture.<br>
-        <strong>2.</strong> Use the controls to Fill the tag or Fit the photo and choose a background color.<br>
-        <strong>3.</strong> Tap <strong>"Save Design"</strong> to download your finalized image.<br>
-        <strong>4.</strong> Click the green button to go to TimeTap and upload your saved design!
+        <strong>1. Setup Background:</strong> Choose a color or upload a custom pattern.<br>
+        <strong>2. Add Main Photo:</strong> Upload your photo and <strong>drag it</strong> to position.<br>
+        <strong>3. Save & Submit:</strong> Tap "Save Design" then proceed to TimeTap.
     </div>
 
-    <div class="upload-btn-wrapper">
-        <label for="file-input" class="btn">📷 Choose Photo</label>
-        <input type="file" id="file-input" accept="image/*" />
+    <!-- Upload Section -->
+    <div class="btn-group">
+        <label for="bg-upload" class="btn">🖼️ Custom Background</label>
+        <input type="file" id="bg-upload" accept="image/*" />
+
+        <label for="photo-upload" class="btn">👤 Main Photo</label>
+        <input type="file" id="photo-upload" accept="image/*" />
     </div>
 
-    <!-- The Dog Tag Preview -->
+    <!-- The Dog Tag -->
     <div class="dog-tag-container" id="dog-tag">
-        <span id="placeholder-text" style="color: #7f8c8d; font-size: 0.9em; padding: 20px;">Your Photo Here</span>
-        <img id="preview-image" src="" alt="Dog Tag Preview">
+        <img id="bg-image-preview" src="" alt="Background">
+        <img id="photo-preview" src="" alt="Main Photo" draggable="false">
+        <span id="placeholder-text" style="color: #7f8c8d;">Start by uploading a photo...</span>
     </div>
 
-    <!-- Editing Controls -->
-    <div class="controls" id="editing-controls">
-        <label><strong>Image Fit:</strong></label><br>
-        <input type="radio" name="fit" value="cover" id="fit-cover" checked onchange="updateFit()"> 
-        <label for="fit-cover">Fill Entire Tag (Crop to Edge)</label><br>
-        <input type="radio" name="fit" value="contain" id="fit-contain" onchange="updateFit()"> 
-        <label for="fit-contain">Fit Inside (Show Background)</label>
-        
-        <div style="margin-top: 15px;"><strong>Choose Background Color:</strong></div>
+    <!-- Controls -->
+    <div class="control-section">
+        <strong>Background Color:</strong>
         <div class="bg-colors">
-            <div class="color-swatch" style="background-color: #ffffff;" onclick="setBg('#ffffff')"></div>
-            <div class="color-swatch" style="background-color: #000000;" onclick="setBg('#000000')"></div>
-            <div class="color-swatch" style="background-color: #c0392b;" onclick="setBg('#c0392b')"></div>
-            <div class="color-swatch" style="background-color: #2980b9;" onclick="setBg('#2980b9')"></div>
-            <div class="color-swatch" style="background-color: #2c3e50;" onclick="setBg('#2c3e50')"></div>
-            <div class="color-swatch" style="background-color: #4b5320;" onclick="setBg('#4b5320')" title="Army Green"></div>
+            <div class="color-swatch" style="background-color: #ffffff;" onclick="setBgColor('#ffffff')" title="White"></div>
+            <div class="color-swatch" style="background-color: #333333;" onclick="setBgColor('#333333')" title="DoW Gray"></div>
+            <div class="color-swatch" style="background-color: #355e93;" onclick="setBgColor('#355e93')" title="DoW Blue"></div>
+            <div class="color-swatch" style="background-color: #4b5320;" onclick="setBgColor('#4b5320')" title="Army OD Green"></div>
+            <div class="color-swatch" style="background-color: #91785d;" onclick="setBgColor('#91785d')" title="Desert Tan"></div>
+            <div class="color-swatch" style="background-color: #c0392b;" onclick="setBgColor('#c0392b')" title="Red"></div>
+            <div class="color-swatch" style="background-color: #2c3e50;" onclick="setBgColor('#2c3e50')" title="Navy"></div>
+        </div>
+        
+        <div style="margin-top: 15px;">
+            <label><input type="radio" name="fit" id="fit-cover" checked onchange="updateFit()"> Fill Tag</label>
+            <label style="margin-left: 15px;"><input type="radio" name="fit" id="fit-contain" onchange="updateFit()"> Fit Inside</label>
         </div>
     </div>
 
-    <button class="btn save-btn" id="save-btn" style="display:none;" onclick="saveDesign()">💾 Save Design</button>
-    <br>
-    
-    <!-- REPLACE THIS LINK -->
-    <a href="https://YOUR_TIMETAP_LINK_HERE.timetap.com" target="_blank">
-        <button class="btn timetap-btn">✅ Go to Registration</button>
+    <button class="btn save-btn" id="save-btn" onclick="saveDesign()">💾 Save Design</button>
+
+    <a href="https://YOUR_TIMETAP_LINK_HERE.timetap.com" class="timetap-btn" target="_blank">
+        ✅ Final Step: Go to Registration
     </a>
 
-    <!-- Hidden canvas to build the downloadable image -->
-    <canvas id="export-canvas" width="390" height="800"></canvas>
+    <canvas id="export-canvas" width="460" height="860"></canvas>
 </div>
 
 <script>
-    let currentImageSrc = null;
+    const canvas = document.getElementById('export-canvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('dog-tag');
+    const photoImg = document.getElementById('photo-preview');
+    const bgImg = document.getElementById('bg-image-preview');
+    
     let currentBgColor = '#ffffff';
     let currentFit = 'cover';
+    const cW = 230, cH = 430;
+    let pW, pH, pX = 0, pY = 0;
+    let isDragging = false, sX, sY;
 
-    // Handle File Upload
-    document.getElementById('file-input').addEventListener('change', function(event) {
-        const file = event.target.files[0];
+    // Handle Main Photo Upload
+    document.getElementById('photo-upload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = function(e) {
-                currentImageSrc = e.target.result;
-                const img = document.getElementById('preview-image');
-                img.src = currentImageSrc;
-                img.style.display = 'block';
+            reader.onload = (event) => {
+                photoImg.src = event.target.result;
+                photoImg.style.display = 'block';
                 document.getElementById('placeholder-text').style.display = 'none';
-                document.getElementById('editing-controls').style.display = 'block';
-                document.getElementById('save-btn').style.display = 'inline-block';
-            }
+                container.classList.add('active');
+                photoImg.onload = () => calculateBounds();
+            };
             reader.readAsDataURL(file);
         }
     });
 
-    // Update Image Fit (Cover vs Contain)
-    function updateFit() {
-        const fitCover = document.getElementById('fit-cover').checked;
-        currentFit = fitCover ? 'cover' : 'contain';
-        document.getElementById('preview-image').style.objectFit = currentFit;
-    }
+    // Handle Custom Background Upload
+    document.getElementById('bg-upload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                bgImg.src = event.target.result;
+                bgImg.style.display = 'block';
+                container.style.backgroundColor = 'transparent';
+                container.classList.add('active');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
 
-    // Set Background Color
-    function setBg(color) {
+    function setBgColor(color) {
         currentBgColor = color;
-        document.getElementById('dog-tag').style.backgroundColor = color;
+        bgImg.style.display = 'none';
+        container.style.backgroundColor = color;
     }
 
-    // Save Design via Canvas
-    function saveDesign() {
-        const canvas = document.getElementById('export-canvas');
-        const ctx = canvas.getContext('2d');
-        const img = document.getElementById('preview-image');
-        
-        // Canvas dimensions (Double resolution for better printing: 390x800)
-        const w = canvas.width;
-        const h = canvas.height;
-        const radius = w / 2; // Perfect pill shape
+    function calculateBounds() {
+        const ratio = photoImg.naturalWidth / photoImg.naturalHeight;
+        const cRatio = cW / cH;
 
-        // 1. Clear Canvas
-        ctx.clearRect(0, 0, w, h);
-
-        // 2. Draw Pill Shape Clipping Path
-        ctx.beginPath();
-        ctx.moveTo(radius, 0);
-        ctx.lineTo(w - radius, 0);
-        ctx.arcTo(w, 0, w, radius, radius);
-        ctx.lineTo(w, h - radius);
-        ctx.arcTo(w, h, w - radius, h, radius);
-        ctx.lineTo(radius, h);
-        ctx.arcTo(0, h, 0, h - radius, radius);
-        ctx.lineTo(0, radius);
-        ctx.arcTo(0, 0, radius, 0, radius);
-        ctx.closePath();
-        ctx.clip(); // Everything drawn next stays inside the dog tag shape!
-
-        // 3. Draw Background Color
-        ctx.fillStyle = currentBgColor;
-        ctx.fillRect(0, 0, w, h);
-
-        // 4. Draw Image
         if (currentFit === 'cover') {
-            // Math to simulate object-fit: cover
-            const imgRatio = img.naturalWidth / img.naturalHeight;
-            const canvasRatio = w / h;
-            let drawW, drawH, drawX, drawY;
-
-            if (imgRatio > canvasRatio) {
-                drawH = h;
-                drawW = img.naturalWidth * (h / img.naturalHeight);
-                drawX = (w - drawW) / 2;
-                drawY = 0;
-            } else {
-                drawW = w;
-                drawH = img.naturalHeight * (w / img.naturalWidth);
-                drawX = 0;
-                drawY = (h - drawH) / 2;
-            }
-            ctx.drawImage(img, drawX, drawY, drawW, drawH);
+            photoImg.classList.add('drag-cursor');
+            if (ratio > cRatio) { pH = cH; pW = cH * ratio; } 
+            else { pW = cW; pH = cW / ratio; }
         } else {
-            // Math to simulate object-fit: contain
-            const imgRatio = img.naturalWidth / img.naturalHeight;
-            const canvasRatio = w / h;
-            let drawW, drawH, drawX, drawY;
-
-            if (imgRatio > canvasRatio) {
-                drawW = w;
-                drawH = img.naturalHeight * (w / img.naturalWidth);
-                drawX = 0;
-                drawY = (h - drawH) / 2;
-            } else {
-                drawH = h;
-                drawW = img.naturalWidth * (h / img.naturalHeight);
-                drawX = (w - drawW) / 2;
-                drawY = 0;
-            }
-            ctx.drawImage(img, drawX, drawY, drawW, drawH);
+            photoImg.classList.remove('drag-cursor');
+            if (ratio > cRatio) { pW = cW; pH = cW / ratio; } 
+            else { pH = cH; pW = cH * ratio; }
         }
 
-        // 5. Trigger Download
-        const link = document.createElement('a');
-        link.download = 'My_Dog_Tag_Design.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+        photoImg.style.width = pW + 'px';
+        photoImg.style.height = pH + 'px';
+        pX = (cW - pW) / 2;
+        pY = (cH - pH) / 2;
+        render();
     }
-</script>
 
-</body>
-</html>
+    function render() {
+        photoImg.style.left = pX + 'px';
+        photoImg.style.top = pY + 'px';
+    }
+
+    function updateFit() {
+        currentFit = document.getElementById('fit-cover').checked ? 'cover' : 'contain';
+        calculateBounds();
+    }
+
+    // Drag Logic
+    function startDrag(e) {
+        if (currentFit !== 'cover' || !photoImg.src) return;
+        isDragging = true;
+        let cX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        let cY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+        sX = cX - pX; sY = cY - pY;
+    }
+    function onDrag(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        let cX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        let cY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+        let nX = cX - sX, nY = cY - sY;
+        
+        // Boundaries
+        if (nX > 0) nX = 0; if (nY > 0) nY = 0;
+        if (nX < cW - pW) nX = cW - pW; if (nY < cH - pH) nY = cH - pH;
+
+        pX = nX; pY = nY; render();
+    }
+    function endDrag() { isDragging = false; }
+
+    container.addEventListener('mousedown', startDrag);
+    window.addEventListener('mousemove', onDrag);
+    window.addEventListener('mouseup', endDrag);
+    container.addEventListener('touchstart', startDrag, {passive:false});
+    window.addEventListener('touchmove', onDrag, {passive:false});
+    window.addEventListener('touchend', endDrag);
+
+    // Save Design
+    function saveDesign() {
+        const w = canvas.width, h = canvas.height, r = w / 2, scale = 2;
+        ctx.clearRect(0, 0, w, h);
+        
+        ctx.beginPath();
+        ctx.moveTo(r, 0); ctx.lineTo(w-r, 0); ctx.arcTo(w, 0, w, r, r);
+        ctx.lineTo(w, h-r); ctx.arcTo(w, h, w-r, h, r);
+        ctx.lineTo(r, h); ctx.arcTo(0, h, 0, h-r, r);
+        ctx.lineTo(0, r); ctx.arcTo(0, 0, r, 0, r);
+        ctx.closePath();
+        ctx.clip();
+
+        // 1. Draw Background
+        if (bgImg.style.display === 'block') {
+            ctx.drawImage(bgImg, 0, 0, w, h);
+        } else {
+            ctx.fillStyle = currentBgColor;
+            ctx.fillRect(0, 0, w, h);
+        }
+
+        // 2. Draw Photo
+        if (photoImg.src) {
+            ctx.drawImage(photoImg, pX * scale, pY * scale, pW * scale, pH * scale);
+        }
+
+        const link = document.createElement('a');
+        link.download = 'My_Dog_Tag
