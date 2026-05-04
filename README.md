@@ -1,7 +1,7 @@
 # dog_tag_submission
 Instructions for submitting a request for photo dog tags
 
-1. Use the preview function to ensure your photo will display properly on the dog tag
+1. Click the index.html file above to use the preview function. This will ensure your photo will display properly on the dog tag once printed
 2. Once confirmed, save the preview
 3. Navigate to https://readiness.timetap.com
 4. Click the photo dog tag request link
