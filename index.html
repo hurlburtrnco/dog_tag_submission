@@ -39,7 +39,7 @@
         }
         
         /* The Hole */
-        .dog-tag-container::before {
+        .-tag-container::before {
             content: '';
             position: absolute;
             top: 32px;
@@ -54,7 +54,7 @@
         }
         
         /* Safe Zone (Dashed Line) */
-        .dog-tag-container::after {
+        .-tag-container::after {
             content: '';
             position: absolute;
             top: 20px; bottom: 20px; left: 20px; right: 20px;
@@ -64,7 +64,7 @@
             pointer-events: none;
             display: none;
         }
-        .dog-tag-container.active::after { display: block; }
+        .-tag-container.active::after { display: block; }
 
         #bg-preview {
             position: absolute;
@@ -117,7 +117,7 @@
 <body>
 
 <div class="container">
-    <h2 style="color:#355e93;">🇺🇸 Dog Tag Photo Tool</h2>
+    <h2 style="color:#355e93;">🇺🇸  Tag Photo Tool</h2>
     
     <p style="font-size: 0.85em; text-align: left; background: #e8f4f8; padding: 12px; border-radius: 6px;">
         <strong>1. Upload Background:</strong> Pick a color swatch below or upload a custom image.<br>
