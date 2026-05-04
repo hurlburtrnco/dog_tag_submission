@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dog Tag Photo Preview</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c3e50; }
+        .instructions {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: left;
+            font-size: 0.95em;
+        }
+        
+        /* EXACT DOG TAG DIMENSIONS (Scaled) */
+        /* 1.1875" width x 2.4375" height = 195px x 400px */
+        .dog-tag-container {
+            width: 195px; 
+            height: 400px;
+            border: 5px solid #bdc3c7;
+            border-radius: 25px; /* Rounded corners */
+            margin: 20px auto;
+            position: relative;
+            overflow: hidden;
+            background-color: #ecf0f1;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* The Hole for the chain */
+        .dog-tag-container::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 22px;
+            height: 22px;
+            background-color: white; /* Simulates a hole cutting through */
+            border-radius: 50%;
+            border: 2px solid #bdc3c7;
+            z-index: 10;
+        }
+
+        /* Safe Zone Overlay */
+        .dog-tag-container::after {
+            content: '';
+            position: absolute;
+            top: 45px; /* Below the hole */
+            bottom: 15px;
+            left: 15px;
+            right: 15px;
+            border: 2px dashed rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            pointer-events: none; /* Lets users click through it */
+            z-index: 5;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3); /* Makes dashed line pop on light photos */
+            display: none; /* Hidden until image is uploaded */
+        }
+        
+        /* Show safe zone only when image is loaded (handled by JS class) */
+        .dog-tag-container.has-image::after {
+            display: block;
+        }
+
+        #preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Centers and crops perfectly to the shape */
+            display: none;
+            z-index: 1;
+        }
+        
+        .upload-btn-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .btn {
+            border: 2px solid #2980b9;
+            color: #2980b9;
+            background-color: white;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+            color: white;
+        }
+        .upload-btn-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .timetap-btn {
+            display: inline-block;
+            background-color: #27ae60;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        .timetap-btn:hover { background-color: #219653; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📸 Custom Dog Tag Preview</h1>
+    
+    <div class="instructions">
+        <strong>Welcome Military Families!</strong><br><br>
+        We are honored to create a custom sublimation dog tag for you. To ensure your photo looks perfect, please use this tool to preview it before requesting a slot.
+        <br><br>
+        <strong>Step 1:</strong> Tap "Choose Photo" to select a picture from your device.<br>
+        <strong>Step 2:</strong> Check the preview! Keep important faces inside the <strong>dashed white line (Safe Zone)</strong> so they don't get cut off by the edges or the chain hole.<br>
+        <strong>Step 3:</strong> Once you are happy with a photo, click the green button to go to TimeTap and submit your request.
+    </div>
+
+    <div class="upload-btn-wrapper">
+        <button class="btn">Choose Photo</button>
+        <input type="file" id="file-input" accept="image/*" />
+    </div>
+
+    <div class="dog-tag-container" id="dog-tag">
+        <span id="placeholder-text" style="color: #7f8c8d; font-size: 0.9em; padding: 20px;">Your Photo Here</span>
+        <img id="preview-image" src="" alt="Dog Tag Preview">
+    </div>
+
+    <!-- REPLACE THE HREF LINK BELOW WITH YOUR TIMETAP LINK -->
+    <a href="https://YOUR_TIMETAP_LINK_HERE.timetap.com" class="timetap-btn" target="_blank">
+        Looks Good! Go to Registration
+    </a>
+</div>
+
+<script>
+    document.getElementById('file-input').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById('preview-image');
+                const container = document.getElementById('dog-tag');
+                
+                img.src = e.target.result;
+                img.style.display = 'block';
+                document.getElementById('placeholder-text').style.display = 'none';
+                
+                // Add class to show the dashed safe zone overlay
+                container.classList.add('has-image');
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+
+</body>
+</html>
