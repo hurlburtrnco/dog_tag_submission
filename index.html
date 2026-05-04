@@ -22,11 +22,12 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         
-        /* THE DOG TAG */
+        /* THE DOG TAG (Exact 1:2 Ratio + Bleed) */
+        /* CSS Size: 240px wide by 440px tall */
         .dog-tag-container {
-            width: 220px; 
+            width: 240px; 
             height: 440px;
-            border-radius: 110px; 
+            border-radius: 120px; /* Perfect pill shape */
             border: 4px solid #bdc3c7;
             margin: 20px auto;
             position: relative;
@@ -38,15 +39,15 @@
             justify-content: center;
         }
         
-        /* The Hole (Perfectly Centered, 0.5cm from top edge to center of hole) */
+        /* The Hole (Perfectly Centered, 0.5cm diameter, 0.5cm from top edge to center) */
         .dog-tag-container::before {
             content: '';
             position: absolute;
-            top: 36px; /* Moved up so the center of the hole is exactly 0.5cm from the safe zone edge */
+            top: 38px; /* Accurately scaled from the safe-zone dashed line */
             left: 50%;
-            transform: translateX(-50%); /* This perfectly centers it between the left and right edges */
-            width: 32px; /* 0.5cm diameter */
-            height: 32px;
+            transform: translateX(-50%);
+            width: 35px; /* Scaled 0.5cm diameter */
+            height: 35px;
             background-color: #f0f2f5; 
             border-radius: 50%;
             border: 2px solid #bdc3c7;
@@ -55,13 +56,13 @@
             pointer-events: none;
         }
         
-        /* Safe Zone (Dashed Line) */
+        /* Safe Zone (Dashed Line representing exact 1.125 x 2.25 metal edges) */
         .dog-tag-container::after {
             content: '';
             position: absolute;
             top: 20px; bottom: 20px; left: 20px; right: 20px;
             border: 2px dashed rgba(255, 255, 255, 0.7);
-            border-radius: 90px;
+            border-radius: 100px;
             z-index: 15;
             pointer-events: none;
             display: none;
@@ -156,8 +157,8 @@
     <!-- REPLACE YOUR TIMETAP LINK HERE -->
     <a href="https://YOUR_TIMETAP_LINK_HERE.timetap.com" class="btn timetap-btn">✅ Go to Registration</a>
 
-    <!-- Canvas -->
-    <canvas id="canvas" width="440" height="880" style="display:none;"></canvas>
+    <!-- Canvas updated for new exact 1:2 ratio (480x880) -->
+    <canvas id="canvas" width="480" height="880" style="display:none;"></canvas>
 </div>
 
 <script>
@@ -167,8 +168,8 @@
     const help = document.getElementById('help-text');
     const zoomSlider = document.getElementById('zoom-slider');
     
-    // Bounds
-    const boxW = 220;
+    // Updated Bounds for 1:2 Ratio
+    const boxW = 240;
     const boxH = 440;
 
     let baseW = 0, baseH = 0;
@@ -277,21 +278,22 @@
 
         const can = document.getElementById('canvas');
         const ctx = can.getContext('2d');
-        ctx.clearRect(0,0,440,880);
+        ctx.clearRect(0,0,480,880);
         
         ctx.save();
         ctx.beginPath();
-        ctx.arc(220, 220, 220, Math.PI, 0); 
-        ctx.lineTo(440, 660);
-        ctx.arc(220, 660, 220, 0, Math.PI); 
+        // Redrawn for new exact 1:2 proportions
+        ctx.arc(240, 240, 240, Math.PI, 0); 
+        ctx.lineTo(480, 640);
+        ctx.arc(240, 640, 240, 0, Math.PI); 
         ctx.closePath();
         ctx.clip();
 
         if (bg.style.display === 'block') {
-            ctx.drawImage(bg, 0, 0, 440, 880);
+            ctx.drawImage(bg, 0, 0, 480, 880);
         } else {
             ctx.fillStyle = tagBox.style.backgroundColor || '#ffffff';
-            ctx.fillRect(0, 0, 440, 880);
+            ctx.fillRect(0, 0, 480, 880);
         }
 
         if (photo.style.display === 'block') {
