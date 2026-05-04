@@ -23,7 +23,6 @@
         }
         
         /* THE DOG TAG */
-        /* CSS Size: 220px wide by 440px tall */
         .dog-tag-container {
             width: 220px; 
             height: 440px;
@@ -39,13 +38,14 @@
             justify-content: center;
         }
         
-        /* The Hole (0.5cm diameter, 0.5cm from top, 1cm from left edge) */
+        /* The Hole (Perfectly Centered, 0.5cm from top edge to center of hole) */
         .dog-tag-container::before {
             content: '';
             position: absolute;
-            top: 52px; /* 20px bleed + 32px (0.5cm) */
-            left: 83px; /* 20px bleed + 63px (1cm) */
-            width: 32px; /* 0.5cm scaled to pixels */
+            top: 36px; /* Moved up so the center of the hole is exactly 0.5cm from the safe zone edge */
+            left: 50%;
+            transform: translateX(-50%); /* This perfectly centers it between the left and right edges */
+            width: 32px; /* 0.5cm diameter */
             height: 32px;
             background-color: #f0f2f5; 
             border-radius: 50%;
@@ -55,7 +55,7 @@
             pointer-events: none;
         }
         
-        /* Safe Zone (Dashed Line representing exact 1.125 x 2.5 metal edges) */
+        /* Safe Zone (Dashed Line) */
         .dog-tag-container::after {
             content: '';
             position: absolute;
