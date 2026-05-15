@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dog Tag Creator</title>
+    <title>Dog Tag Creator v2.1</title>
     <style>
         body {
             font-family: sans-serif;
@@ -22,11 +22,11 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         
-        /* THE DOG TAG (Matched to 1.125" x 2" Stock) */
+        /* THE DOG TAG */
         .dog-tag-container {
             width: 220px; 
             height: 352px;
-            border-radius: 45px; /* Rounded corners as seen in user photo */
+            border-radius: 45px; 
             border: 4px solid #bdc3c7;
             margin: 20px auto;
             position: relative;
@@ -38,24 +38,23 @@
             justify-content: center;
         }
         
-        /* The Hole (0.4cm diameter, 0.5cm from top to center, centered horizontally) */
+        /* NEW UPDATED HOLE: 0.4cm diameter, 0.5cm from top-to-center */
         .dog-tag-container::before {
             content: '';
             position: absolute;
-            top: 39px; /* Top edge offset calculated from 0.5cm center-to-top */
+            top: 39px; /* This places the CENTER of the hole exactly 0.5cm from the safe-zone top */
             left: 50%;
             transform: translateX(-50%);
-            width: 25px; /* 0.4cm diameter scaled */
+            width: 25px; /* Exactly 0.4cm scaled */
             height: 25px;
             background-color: #f0f2f5; 
             border-radius: 50%;
-            border: 2px solid #bdc3c7;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 -1px 1px rgba(255,255,255,0.8);
+            border: 1px solid #bdc3c7;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
             z-index: 20;
             pointer-events: none;
         }
         
-        /* Safe Zone (Dashed Line representing metal edges) */
         .dog-tag-container::after {
             content: '';
             position: absolute;
@@ -65,7 +64,6 @@
             z-index: 15;
             pointer-events: none;
             display: none;
-            box-shadow: 0 0 5px rgba(0,0,0,0.4);
         }
         .dog-tag-container.active::after { display: block; }
 
@@ -73,27 +71,26 @@
             position: absolute;
             width: 100%; height: 100%;
             object-fit: cover;
-            z-index: 1; display: none; pointer-events: none;
+            z-index: 1; display: none;
         }
         #photo-preview {
             position: absolute;
             z-index: 5; display: none; cursor: grab;
             transform-origin: top left;
         }
-        #photo-preview:active { cursor: grabbing; }
 
         .btn {
             display: inline-block; background: #355e93; color: white;
-            padding: 12px 20px; border-radius: 8px; cursor: pointer;
+            padding: 10px 15px; border-radius: 8px; cursor: pointer;
             margin: 5px; font-weight: bold; text-decoration: none;
             border: none; font-size: 14px;
         }
-        .save-btn { background: #e67e22; width: 100%; margin-top: 10px; font-size: 16px; }
+        .save-btn { background: #e67e22; width: 100%; margin-top: 10px; }
         .timetap-btn { background: #27ae60; width: 100%; margin-top: 20px; display: block; box-sizing: border-box; }
         .swatch-group { margin: 10px 0; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
         .swatch { width: 30px; height: 30px; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; }
-        .zoom-control { margin: 15px 0; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
-        input[type=range] { width: 100%; margin-top: 10px; }
+        .zoom-control { margin: 15px 0; background: #f9f9f9; padding: 15px; border-radius: 8px; }
+        input[type=range] { width: 100%; }
     </style>
 </head>
 <body>
@@ -101,39 +98,33 @@
 <div class="container">
     <h2 style="color:#355e93;">🇺🇸 Dog Tag Photo Tool</h2>
     
-    <p style="font-size: 0.85em; text-align: left; background: #e8f4f8; padding: 12px; border-radius: 6px;">
-        <strong>1. Upload Background:</strong> Pick a color swatch or upload a custom image.<br>
-        <strong>2. Upload Photo:</strong> Drag it around and use the <strong>Zoom Slider</strong> to fit it perfectly.<br>
-        <strong>3. Save & Submit:</strong> Save the design and upload it to TimeTap.
-    </p>
-
     <div>
         <label class="btn">🖼️ Custom BG <input type="file" id="bg-input" accept="image/*" style="display:none;"></label>
         <label class="btn">👤 Upload Photo <input type="file" id="photo-input" accept="image/*" style="display:none;"></label>
     </div>
 
     <div class="zoom-control">
-        <label style="font-weight: bold; color: #333;">🔍 Zoom Photo In/Out:</label>
+        <label>🔍 Zoom:</label>
         <input type="range" id="zoom-slider" min="0.2" max="3" step="0.05" value="1">
     </div>
 
     <div class="swatch-group">
-        <div class="swatch" style="background:#fff;" onclick="setCol('#fff')" title="White"></div>
-        <div class="swatch" style="background:#333;" onclick="setCol('#333')" title="Gray"></div>
-        <div class="swatch" style="background:#4b5320;" onclick="setCol('#4b5320')" title="Army Green"></div>
-        <div class="swatch" style="background:#355e93;" onclick="setCol('#355e93')" title="Navy Blue"></div>
-        <div class="swatch" style="background:#c0392b;" onclick="setCol('#c0392b')" title="Red"></div>
+        <div onclick="setCol('#fff')" class="swatch" style="background:#fff;"></div>
+        <div onclick="setCol('#333')" class="swatch" style="background:#333;"></div>
+        <div onclick="setCol('#4b5320')" class="swatch" style="background:#4b5320;"></div>
+        <div onclick="setCol('#355e93')" class="swatch" style="background:#355e93;"></div>
     </div>
 
     <div class="dog-tag-container" id="tag-box">
         <img id="bg-preview">
         <img id="photo-preview" draggable="false">
-        <span id="help-text" style="color:#aaa; padding: 20px;">Upload a photo to begin</span>
+        <span id="help-text" style="color:#aaa;">Upload photo to begin</span>
     </div>
 
     <button class="btn save-btn" onclick="saveTag()">💾 Save Design</button>
     <a href="https://YOUR_TIMETAP_LINK_HERE.timetap.com" class="btn timetap-btn">✅ Go to Registration</a>
 
+    <p style="font-size: 10px; color: #ccc; margin-top: 20px;">System Version 2.1 (0.4cm Hole Update)</p>
     <canvas id="canvas" width="440" height="704" style="display:none;"></canvas>
 </div>
 
@@ -144,91 +135,61 @@
     const help = document.getElementById('help-text');
     const zoomSlider = document.getElementById('zoom-slider');
     
-    const boxW = 220;
-    const boxH = 352;
+    const boxW = 220; const boxH = 352;
+    let baseW = 0, baseH = 0, pX = 0, pY = 0, pW = 0, pH = 0, isDrag = false, startX, startY;
 
-    let baseW = 0, baseH = 0;
-    let pX = 0, pY = 0, pW = 0, pH = 0;
-    let isDrag = false, startX, startY;
-
-    document.getElementById('bg-input').onchange = function(e) {
-        if (!e.target.files[0]) return;
+    document.getElementById('bg-input').onchange = (e) => {
         const reader = new FileReader();
         reader.onload = (ev) => {
-            bg.src = ev.target.result;
-            bg.style.display = 'block';
-            tagBox.style.backgroundColor = 'transparent';
-            help.style.display = 'none';
+            bg.src = ev.target.result; bg.style.display = 'block';
+            tagBox.style.backgroundColor = 'transparent'; help.style.display = 'none';
             tagBox.classList.add('active');
         };
         reader.readAsDataURL(e.target.files[0]);
     };
 
-    document.getElementById('photo-input').onchange = function(e) {
-        if (!e.target.files[0]) return;
+    document.getElementById('photo-input').onchange = (e) => {
         const reader = new FileReader();
         reader.onload = (ev) => {
             photo.src = ev.target.result;
             photo.onload = () => {
-                photo.style.display = 'block';
-                help.style.display = 'none';
-                tagBox.classList.add('active');
-                
+                photo.style.display = 'block'; help.style.display = 'none'; tagBox.classList.add('active');
                 const ratio = photo.naturalWidth / photo.naturalHeight;
-                if (ratio > (boxW/boxH)) { 
-                    baseH = boxH; baseW = boxH * ratio; 
-                } else { 
-                    baseW = boxW; baseH = boxW / ratio; 
-                }
-                
-                pW = baseW; pH = baseH;
-                pX = (boxW - pW) / 2;
-                pY = (boxH - pH) / 2;
-                
-                zoomSlider.value = 1; 
-                updateView();
+                if (ratio > (boxW/boxH)) { baseH = boxH; baseW = boxH * ratio; } 
+                else { baseW = boxW; baseH = boxW / ratio; }
+                pW = baseW; pH = baseH; pX = (boxW - pW) / 2; pY = (boxH - pH) / 2;
+                zoomSlider.value = 1; updateView();
             };
         };
         reader.readAsDataURL(e.target.files[0]);
     };
 
-    function setCol(c) {
-        bg.style.display = 'none';
-        tagBox.style.backgroundColor = c;
-    }
+    function setCol(c) { bg.style.display = 'none'; tagBox.style.backgroundColor = c; }
 
     zoomSlider.oninput = function() {
         if (!photo.src) return;
         let scale = parseFloat(this.value);
-        let newW = baseW * scale;
-        let newH = baseH * scale;
-        pX -= (newW - pW) / 2;
-        pY -= (newH - pH) / 2;
-        pW = newW; pH = newH;
-        updateView();
+        let nW = baseW * scale, nH = baseH * scale;
+        pX -= (nW - pW) / 2; pY -= (nH - pH) / 2;
+        pW = nW; pH = nH; updateView();
     };
 
     function updateView() {
-        photo.style.width = pW + 'px';
-        photo.style.height = pH + 'px';
-        photo.style.left = pX + 'px';
-        photo.style.top = pY + 'px';
+        photo.style.width = pW + 'px'; photo.style.height = pH + 'px';
+        photo.style.left = pX + 'px'; photo.style.top = pY + 'px';
     }
 
     function start(e) {
-        if (!photo.src) return;
-        isDrag = true;
-        const cX = e.clientX || (e.touches && e.touches[0].clientX);
-        const cY = e.clientY || (e.touches && e.touches[0].clientY);
+        if (!photo.src) return; isDrag = true;
+        const cX = e.clientX || e.touches[0].clientX;
+        const cY = e.clientY || e.touches[0].clientY;
         startX = cX - pX; startY = cY - pY;
     }
     function move(e) {
-        if (!isDrag) return;
-        e.preventDefault(); 
-        const cX = e.clientX || (e.touches && e.touches[0].clientX);
-        const cY = e.clientY || (e.touches && e.touches[0].clientY);
-        pX = cX - startX; pY = cY - startY;
-        updateView();
+        if (!isDrag) return; e.preventDefault();
+        const cX = e.clientX || e.touches[0].clientX;
+        const cY = e.clientY || e.touches[0].clientY;
+        pX = cX - startX; pY = cY - startY; updateView();
     }
     function stop() { isDrag = false; }
 
@@ -240,20 +201,13 @@
     window.addEventListener('touchend', stop);
 
     function saveTag() {
-        if (!photo.src && bg.style.display === 'none') {
-            alert("Please upload a photo or background first.");
-            return;
-        }
-
-        const can = document.getElementById('canvas');
-        const ctx = can.getContext('2d');
+        if (!photo.src && bg.style.display === 'none') return;
+        const can = document.getElementById('canvas'), ctx = can.getContext('2d');
         ctx.clearRect(0,0,440,704);
-        
         ctx.save();
         ctx.beginPath();
         const cornerRadius = 90; 
-        ctx.moveTo(cornerRadius, 0);
-        ctx.lineTo(440 - cornerRadius, 0);
+        ctx.moveTo(cornerRadius, 0); ctx.lineTo(440 - cornerRadius, 0);
         ctx.arcTo(440, 0, 440, cornerRadius, cornerRadius);
         ctx.lineTo(440, 704 - cornerRadius);
         ctx.arcTo(440, 704, 440 - cornerRadius, 704, cornerRadius);
@@ -263,23 +217,12 @@
         ctx.arcTo(0, 0, cornerRadius, 0, cornerRadius);
         ctx.closePath();
         ctx.clip();
-
-        if (bg.style.display === 'block') {
-            ctx.drawImage(bg, 0, 0, 440, 704);
-        } else {
-            ctx.fillStyle = tagBox.style.backgroundColor || '#ffffff';
-            ctx.fillRect(0, 0, 440, 704);
-        }
-
-        if (photo.style.display === 'block') {
-            ctx.drawImage(photo, pX * 2, pY * 2, pW * 2, pH * 2);
-        }
+        if (bg.style.display === 'block') { ctx.drawImage(bg, 0, 0, 440, 704); } 
+        else { ctx.fillStyle = tagBox.style.backgroundColor || '#ffffff'; ctx.fillRect(0, 0, 440, 704); }
+        if (photo.style.display === 'block') { ctx.drawImage(photo, pX * 2, pY * 2, pW * 2, pH * 2); }
         ctx.restore();
-
         const link = document.createElement('a');
-        link.download = 'My_Custom_Dog_Tag.png';
-        link.href = can.toDataURL('image/png');
-        link.click();
+        link.download = 'My_Dog_Tag.png'; link.href = can.toDataURL('image/png'); link.click();
     }
 </script>
 
