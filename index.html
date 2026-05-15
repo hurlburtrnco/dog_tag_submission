@@ -22,13 +22,11 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         
-        /* THE DOG TAG (Matched to the photo) */
-        /* CSS Size: 220px wide by 352px tall */
+        /* THE DOG TAG (Matched to 1.125" x 2" Stock) */
         .dog-tag-container {
             width: 220px; 
             height: 352px;
-            /* 45px creates the specific rounded curve seen in the photo */
-            border-radius: 45px; 
+            border-radius: 45px; /* Rounded corners as seen in user photo */
             border: 4px solid #bdc3c7;
             margin: 20px auto;
             position: relative;
@@ -40,15 +38,15 @@
             justify-content: center;
         }
         
-        /* The Hole (Centered, scaled to dimensions) */
+        /* The Hole (0.4cm diameter, 0.5cm from top to center, centered horizontally) */
         .dog-tag-container::before {
             content: '';
             position: absolute;
-            top: 35px; 
+            top: 39px; /* Top edge offset calculated from 0.5cm center-to-top */
             left: 50%;
             transform: translateX(-50%);
-            width: 30px; 
-            height: 30px;
+            width: 25px; /* 0.4cm diameter scaled */
+            height: 25px;
             background-color: #f0f2f5; 
             border-radius: 50%;
             border: 2px solid #bdc3c7;
@@ -57,13 +55,13 @@
             pointer-events: none;
         }
         
-        /* Safe Zone (Dashed Line representing exact metal edges) */
+        /* Safe Zone (Dashed Line representing metal edges) */
         .dog-tag-container::after {
             content: '';
             position: absolute;
             top: 20px; bottom: 20px; left: 20px; right: 20px;
             border: 2px dashed rgba(255, 255, 255, 0.7);
-            border-radius: 25px; /* Scaled inner radius */
+            border-radius: 25px; 
             z-index: 15;
             pointer-events: none;
             display: none;
@@ -84,7 +82,6 @@
         }
         #photo-preview:active { cursor: grabbing; }
 
-        /* Controls */
         .btn {
             display: inline-block; background: #355e93; color: white;
             padding: 12px 20px; border-radius: 8px; cursor: pointer;
@@ -102,7 +99,7 @@
 <body>
 
 <div class="container">
-    <h2 style="color:#355e93;">Dog Tag Photo Tool</h2>
+    <h2 style="color:#355e93;">🇺🇸 Dog Tag Photo Tool</h2>
     
     <p style="font-size: 0.85em; text-align: left; background: #e8f4f8; padding: 12px; border-radius: 6px;">
         <strong>1. Upload Background:</strong> Pick a color swatch or upload a custom image.<br>
@@ -135,10 +132,8 @@
     </div>
 
     <button class="btn save-btn" onclick="saveTag()">💾 Save Design</button>
-    <!-- REPLACE YOUR TIMETAP LINK HERE -->
     <a href="https://YOUR_TIMETAP_LINK_HERE.timetap.com" class="btn timetap-btn">✅ Go to Registration</a>
 
-    <!-- Canvas updated for new ratio (440x704) -->
     <canvas id="canvas" width="440" height="704" style="display:none;"></canvas>
 </div>
 
@@ -149,7 +144,6 @@
     const help = document.getElementById('help-text');
     const zoomSlider = document.getElementById('zoom-slider');
     
-    // Bounds for 1.125 x 2 ratio
     const boxW = 220;
     const boxH = 352;
 
@@ -187,8 +181,7 @@
                     baseW = boxW; baseH = boxW / ratio; 
                 }
                 
-                pW = baseW; 
-                pH = baseH;
+                pW = baseW; pH = baseH;
                 pX = (boxW - pW) / 2;
                 pY = (boxH - pH) / 2;
                 
@@ -209,12 +202,9 @@
         let scale = parseFloat(this.value);
         let newW = baseW * scale;
         let newH = baseH * scale;
-        
         pX -= (newW - pW) / 2;
         pY -= (newH - pH) / 2;
-        
-        pW = newW;
-        pH = newH;
+        pW = newW; pH = newH;
         updateView();
     };
 
@@ -230,16 +220,14 @@
         isDrag = true;
         const cX = e.clientX || (e.touches && e.touches[0].clientX);
         const cY = e.clientY || (e.touches && e.touches[0].clientY);
-        startX = cX - pX; 
-        startY = cY - pY;
+        startX = cX - pX; startY = cY - pY;
     }
     function move(e) {
         if (!isDrag) return;
         e.preventDefault(); 
         const cX = e.clientX || (e.touches && e.touches[0].clientX);
         const cY = e.clientY || (e.touches && e.touches[0].clientY);
-        pX = cX - startX; 
-        pY = cY - startY;
+        pX = cX - startX; pY = cY - startY;
         updateView();
     }
     function stop() { isDrag = false; }
@@ -263,8 +251,6 @@
         
         ctx.save();
         ctx.beginPath();
-        
-        // Redrawn with 90px scaled radius to match the photo's curved corners
         const cornerRadius = 90; 
         ctx.moveTo(cornerRadius, 0);
         ctx.lineTo(440 - cornerRadius, 0);
@@ -275,7 +261,6 @@
         ctx.arcTo(0, 704, 0, 704 - cornerRadius, cornerRadius);
         ctx.lineTo(0, cornerRadius);
         ctx.arcTo(0, 0, cornerRadius, 0, cornerRadius);
-        
         ctx.closePath();
         ctx.clip();
 
