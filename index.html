@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dog Tag Creator v2.1</title>
+    <title>Dog Tag Creator v2.2</title>
     <style>
         body {
             font-family: sans-serif;
@@ -76,7 +76,8 @@
         #photo-preview {
             position: absolute;
             z-index: 5; display: none; cursor: grab;
-            transform-origin: top left;
+            /* Changed to center so the photo rotates perfectly around its middle */
+            transform-origin: center; 
         }
 
         .btn {
@@ -85,11 +86,13 @@
             margin: 5px; font-weight: bold; text-decoration: none;
             border: none; font-size: 14px;
         }
-        .save-btn { background: #e67e22; width: 100%; margin-top: 10px; }
-        .timetap-btn { background: #27ae60; width: 100%; margin-top: 20px; display: block; box-sizing: border-box; }
+        .save-btn { background: #e67e22; width: 100%; margin-top: 10px; font-size: 16px; padding: 15px; }
+        .timetap-btn { background: #27ae60; width: 100%; margin-top: 20px; display: block; box-sizing: border-box; padding: 15px;}
         .swatch-group { margin: 10px 0; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
         .swatch { width: 30px; height: 30px; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; }
-        .zoom-control { margin: 15px 0; background: #f9f9f9; padding: 15px; border-radius: 8px; }
+        .zoom-control { margin: 15px 0; background: #f9f9f9; padding: 15px; border-radius: 8px; text-align: left;}
+        .slider-row { margin-bottom: 15px; }
+        .slider-row label { font-weight: bold; color: #333; display: inline-block; margin-bottom: 5px;}
         input[type=range] { width: 100%; }
     </style>
 </head>
@@ -104,8 +107,14 @@
     </div>
 
     <div class="zoom-control">
-        <label>🔍 Zoom:</label>
-        <input type="range" id="zoom-slider" min="0.2" max="3" step="0.05" value="1">
+        <div class="slider-row">
+            <label>🔍 Zoom:</label>
+            <input type="range" id="zoom-slider" min="0.2" max="3" step="0.05" value="1">
+        </div>
+        <div class="slider-row" style="margin-bottom: 0;">
+            <label>🔄 Rotate:</label>
+            <input type="range" id="rotate-slider" min="-180" max="180" step="1" value="0">
+        </div>
     </div>
 
     <div class="swatch-group">
@@ -124,7 +133,7 @@
     <button class="btn save-btn" onclick="saveTag()">💾 Save Design</button>
     <a href="https://YOUR_TIMETAP_LINK_HERE.timetap.com" class="btn timetap-btn">✅ Go to Registration</a>
 
-    <p style="font-size: 10px; color: #ccc; margin-top: 20px;">System Version 2.1 (0.4cm Hole Update)</p>
+    <p style="font-size: 10px; color: #ccc; margin-top: 20px;">System Version 2.2 (Rotation Added)</p>
     <canvas id="canvas" width="440" height="704" style="display:none;"></canvas>
 </div>
 
@@ -134,9 +143,12 @@
     const bg = document.getElementById('bg-preview');
     const help = document.getElementById('help-text');
     const zoomSlider = document.getElementById('zoom-slider');
+    const rotateSlider = document.getElementById('rotate-slider');
     
     const boxW = 220; const boxH = 352;
-    let baseW = 0, baseH = 0, pX = 0, pY = 0, pW = 0, pH = 0, isDrag = false, startX, startY;
+    let baseW = 0, baseH = 0, pX = 0, pY = 0, pW = 0, pH = 0;
+    let pRotation = 0; /* New variable for tracking angle */
+    let isDrag = false, startX, startY;
 
     document.getElementById('bg-input').onchange = (e) => {
         const reader = new FileReader();
@@ -158,7 +170,13 @@
                 if (ratio > (boxW/boxH)) { baseH = boxH; baseW = boxH * ratio; } 
                 else { baseW = boxW; baseH = boxW / ratio; }
                 pW = baseW; pH = baseH; pX = (boxW - pW) / 2; pY = (boxH - pH) / 2;
-                zoomSlider.value = 1; updateView();
+                
+                // Reset sliders on new upload
+                zoomSlider.value = 1; 
+                rotateSlider.value = 0;
+                pRotation = 0;
+                
+                updateView();
             };
         };
         reader.readAsDataURL(e.target.files[0]);
@@ -166,6 +184,7 @@
 
     function setCol(c) { bg.style.display = 'none'; tagBox.style.backgroundColor = c; }
 
+    // Zoom Logic
     zoomSlider.oninput = function() {
         if (!photo.src) return;
         let scale = parseFloat(this.value);
@@ -174,9 +193,17 @@
         pW = nW; pH = nH; updateView();
     };
 
+    // Rotate Logic
+    rotateSlider.oninput = function() {
+        if (!photo.src) return;
+        pRotation = parseFloat(this.value);
+        updateView();
+    };
+
     function updateView() {
         photo.style.width = pW + 'px'; photo.style.height = pH + 'px';
         photo.style.left = pX + 'px'; photo.style.top = pY + 'px';
+        photo.style.transform = `rotate(${pRotation}deg)`;
     }
 
     function start(e) {
@@ -217,9 +244,21 @@
         ctx.arcTo(0, 0, cornerRadius, 0, cornerRadius);
         ctx.closePath();
         ctx.clip();
+        
         if (bg.style.display === 'block') { ctx.drawImage(bg, 0, 0, 440, 704); } 
         else { ctx.fillStyle = tagBox.style.backgroundColor || '#ffffff'; ctx.fillRect(0, 0, 440, 704); }
-        if (photo.style.display === 'block') { ctx.drawImage(photo, pX * 2, pY * 2, pW * 2, pH * 2); }
+        
+        if (photo.style.display === 'block') { 
+            ctx.save();
+            // Move canvas drawing origin to the center of the photo
+            ctx.translate((pX + pW / 2) * 2, (pY + pH / 2) * 2);
+            // Rotate the canvas by the degrees selected
+            ctx.rotate(pRotation * Math.PI / 180);
+            // Draw the image offset by half its width/height to center it perfectly on the rotated origin
+            ctx.drawImage(photo, -pW, -pH, pW * 2, pH * 2); 
+            ctx.restore();
+        }
+        
         ctx.restore();
         const link = document.createElement('a');
         link.download = 'My_Dog_Tag.png'; link.href = can.toDataURL('image/png'); link.click();
