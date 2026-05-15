@@ -22,12 +22,12 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         
-        /* THE DOG TAG (Exact 1:2 Ratio + Bleed) */
-        /* CSS Size: 240px wide by 440px tall */
+        /* THE DOG TAG (Recalculated for 1.125" x 2" + Bleed) */
+        /* CSS Size: 220px wide by 352px tall */
         .dog-tag-container {
-            width: 240px; 
-            height: 440px;
-            border-radius: 120px; /* Perfect pill shape */
+            width: 220px; 
+            height: 352px;
+            border-radius: 40px; /* Rounded corners for the "stadium" shape */
             border: 4px solid #bdc3c7;
             margin: 20px auto;
             position: relative;
@@ -39,30 +39,30 @@
             justify-content: center;
         }
         
-        /* The Hole (Perfectly Centered, 0.5cm diameter, 0.5cm from top edge to center) */
+        /* The Hole (Centered, scaled to new dimensions) */
         .dog-tag-container::before {
             content: '';
             position: absolute;
-            top: 38px; /* Accurately scaled from the safe-zone dashed line */
+            top: 35px; 
             left: 50%;
             transform: translateX(-50%);
-            width: 35px; /* Scaled 0.5cm diameter */
-            height: 35px;
+            width: 30px; 
+            height: 30px;
             background-color: #f0f2f5; 
             border-radius: 50%;
             border: 2px solid #bdc3c7;
-            box-shadow: inset 0 3px 5px rgba(0,0,0,0.2), 0 -1px 2px rgba(255,255,255,0.8);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 -1px 1px rgba(255,255,255,0.8);
             z-index: 20;
             pointer-events: none;
         }
         
-        /* Safe Zone (Dashed Line representing exact 1.125 x 2.25 metal edges) */
+        /* Safe Zone (Dashed Line representing exact 1.125 x 2 metal edges) */
         .dog-tag-container::after {
             content: '';
             position: absolute;
             top: 20px; bottom: 20px; left: 20px; right: 20px;
             border: 2px dashed rgba(255, 255, 255, 0.7);
-            border-radius: 100px;
+            border-radius: 20px;
             z-index: 15;
             pointer-events: none;
             display: none;
@@ -72,59 +72,39 @@
 
         #bg-preview {
             position: absolute;
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             object-fit: cover;
-            z-index: 1;
-            display: none;
-            pointer-events: none;
+            z-index: 1; display: none; pointer-events: none;
         }
         #photo-preview {
             position: absolute;
-            z-index: 5;
-            display: none;
-            cursor: grab;
+            z-index: 5; display: none; cursor: grab;
             transform-origin: top left;
         }
         #photo-preview:active { cursor: grabbing; }
 
         /* Controls */
         .btn {
-            display: inline-block;
-            background: #355e93;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin: 5px;
-            font-weight: bold;
-            text-decoration: none;
-            border: none;
-            font-size: 14px;
+            display: inline-block; background: #355e93; color: white;
+            padding: 12px 20px; border-radius: 8px; cursor: pointer;
+            margin: 5px; font-weight: bold; text-decoration: none;
+            border: none; font-size: 14px;
         }
         .save-btn { background: #e67e22; width: 100%; margin-top: 10px; font-size: 16px; }
-        .tap-btn { background: #27ae60; width: 100%; margin-top: 20px; display: block; box-sizing: border-box; }
-        
+        .timetap-btn { background: #27ae60; width: 100%; margin-top: 20px; display: block; box-sizing: border-box; }
         .swatch-group { margin: 10px 0; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
         .swatch { width: 30px; height: 30px; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; }
-        
-        .zoom-control {
-            margin: 15px 0;
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-        }
+        .zoom-control { margin: 15px 0; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
         input[type=range] { width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 style="color:#355e93;">🇺🇸 Dog Tag Photo Tool</h2>
+    <h2 style="color:#355e93;">Dog Tag Photo Tool</h2>
     
     <p style="font-size: 0.85em; text-align: left; background: #e8f4f8; padding: 12px; border-radius: 6px;">
-        <strong>1. Upload Background:</strong> Pick a color swatch below or upload a custom image.<br>
+        <strong>1. Upload Background:</strong> Pick a color swatch or upload a custom image.<br>
         <strong>2. Upload Photo:</strong> Drag it around and use the <strong>Zoom Slider</strong> to fit it perfectly.<br>
         <strong>3. Save & Submit:</strong> Save the design and upload it to TimeTap.
     </p>
@@ -155,10 +135,10 @@
 
     <button class="btn save-btn" onclick="saveTag()">💾 Save Design</button>
     <!-- REPLACE YOUR TIMETAP LINK HERE -->
-    <a href="https://dogtags.timetap.com/#/" class="btn timetap-btn">✅ Return to Registration Page</a>
+    <a href="https://YOUR_TIMETAP_LINK_HERE.timetap.com" class="btn timetap-btn">✅ Go to Registration</a>
 
-    <!-- Canvas updated for new exact 1:2 ratio (480x880) -->
-    <canvas id="canvas" width="480" height="880" style="display:none;"></canvas>
+    <!-- Canvas updated for new ratio (440x704) -->
+    <canvas id="canvas" width="440" height="704" style="display:none;"></canvas>
 </div>
 
 <script>
@@ -168,9 +148,9 @@
     const help = document.getElementById('help-text');
     const zoomSlider = document.getElementById('zoom-slider');
     
-    // Updated Bounds for 1:2 Ratio
-    const boxW = 240;
-    const boxH = 440;
+    // Updated Bounds for new 1.125 x 2 ratio
+    const boxW = 220;
+    const boxH = 352;
 
     let baseW = 0, baseH = 0;
     let pX = 0, pY = 0, pW = 0, pH = 0;
@@ -278,22 +258,29 @@
 
         const can = document.getElementById('canvas');
         const ctx = can.getContext('2d');
-        ctx.clearRect(0,0,480,880);
+        ctx.clearRect(0,0,440,704);
         
         ctx.save();
         ctx.beginPath();
-        // Redrawn for new exact 1:2 proportions
-        ctx.arc(240, 240, 240, Math.PI, 0); 
-        ctx.lineTo(480, 640);
-        ctx.arc(240, 640, 240, 0, Math.PI); 
+        // Redrawn for new stadium shape
+        const cornerRadius = 40 * 2; // Scale corner radius for canvas
+        ctx.moveTo(cornerRadius, 0);
+        ctx.lineTo(440 - cornerRadius, 0);
+        ctx.arcTo(440, 0, 440, cornerRadius, cornerRadius);
+        ctx.lineTo(440, 704 - cornerRadius);
+        ctx.arcTo(440, 704, 440 - cornerRadius, 704, cornerRadius);
+        ctx.lineTo(cornerRadius, 704);
+        ctx.arcTo(0, 704, 0, 704 - cornerRadius, cornerRadius);
+        ctx.lineTo(0, cornerRadius);
+        ctx.arcTo(0, 0, cornerRadius, 0, cornerRadius);
         ctx.closePath();
         ctx.clip();
 
         if (bg.style.display === 'block') {
-            ctx.drawImage(bg, 0, 0, 480, 880);
+            ctx.drawImage(bg, 0, 0, 440, 704);
         } else {
             ctx.fillStyle = tagBox.style.backgroundColor || '#ffffff';
-            ctx.fillRect(0, 0, 480, 880);
+            ctx.fillRect(0, 0, 440, 704);
         }
 
         if (photo.style.display === 'block') {
