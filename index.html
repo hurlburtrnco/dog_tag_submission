@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dog Tag Creator v2.2</title>
+    <title>Dog Tag Creator</title>
     <style>
         body {
             font-family: sans-serif;
@@ -38,14 +38,14 @@
             justify-content: center;
         }
         
-        /* NEW UPDATED HOLE: 0.4cm diameter, 0.5cm from top-to-center */
+        /* HOLE: 0.4cm diameter, 0.5cm from top-to-center */
         .dog-tag-container::before {
             content: '';
             position: absolute;
-            top: 36px; /* This places the CENTER of the hole exactly 0.5cm from the safe-zone top */
+            top: 36px; 
             left: 50%;
             transform: translateX(-50%);
-            width: 22px; /* Exactly 0.4cm scaled */
+            width: 22px; 
             height: 22px;
             background-color: #f0f2f5; 
             border-radius: 50%;
@@ -55,6 +55,7 @@
             pointer-events: none;
         }
         
+        /* Safe Zone */
         .dog-tag-container::after {
             content: '';
             position: absolute;
@@ -76,7 +77,6 @@
         #photo-preview {
             position: absolute;
             z-index: 5; display: none; cursor: grab;
-            /* Changed to center so the photo rotates perfectly around its middle */
             transform-origin: center; 
         }
 
@@ -94,6 +94,16 @@
         .slider-row { margin-bottom: 15px; }
         .slider-row label { font-weight: bold; color: #333; display: inline-block; margin-bottom: 5px;}
         input[type=range] { width: 100%; }
+        
+        .instructions {
+            font-size: 0.9em; 
+            text-align: left; 
+            background: #e8f4f8; 
+            padding: 15px; 
+            border-radius: 8px; 
+            line-height: 1.5;
+            color: #2c3e50;
+        }
     </style>
 </head>
 <body>
@@ -101,8 +111,15 @@
 <div class="container">
     <h2 style="color:#355e93;">🇺🇸 Dog Tag Photo Tool</h2>
     
-    <div>
-        <label class="btn">🖼️ Custom BG <input type="file" id="bg-input" accept="image/*" style="display:none;"></label>
+    <div class="instructions">
+        <strong>Important Instructions:</strong><br><br>
+        Your photo should fill the entire template, but <strong>only the parts inside the dashed line will be printed</strong> onto your dog tag. The space outside the line is just bleed area for our printers!<br><br>
+        If your photo does not fit to fill the whole tag, please use the color swatches below or click <strong>Upload Background</strong>. Otherwise, any empty areas will print as plain white space.<br><br>
+        Use the Zoom and Rotate sliders to fit your photo perfectly, then click <strong>Save Design</strong>.
+    </div>
+
+    <div style="margin-top: 15px;">
+        <label class="btn">🖼️ Upload Background <input type="file" id="bg-input" accept="image/*" style="display:none;"></label>
         <label class="btn">👤 Upload Photo <input type="file" id="photo-input" accept="image/*" style="display:none;"></label>
     </div>
 
@@ -118,10 +135,10 @@
     </div>
 
     <div class="swatch-group">
-        <div onclick="setCol('#fff')" class="swatch" style="background:#fff;"></div>
-        <div onclick="setCol('#333')" class="swatch" style="background:#333;"></div>
-        <div onclick="setCol('#4b5320')" class="swatch" style="background:#4b5320;"></div>
-        <div onclick="setCol('#355e93')" class="swatch" style="background:#355e93;"></div>
+        <div onclick="setCol('#fff')" class="swatch" style="background:#fff;" title="White"></div>
+        <div onclick="setCol('#333')" class="swatch" style="background:#333;" title="Gray"></div>
+        <div onclick="setCol('#4b5320')" class="swatch" style="background:#4b5320;" title="Army Green"></div>
+        <div onclick="setCol('#355e93')" class="swatch" style="background:#355e93;" title="Navy Blue"></div>
     </div>
 
     <div class="dog-tag-container" id="tag-box">
@@ -131,9 +148,10 @@
     </div>
 
     <button class="btn save-btn" onclick="saveTag()">💾 Save Design</button>
+    
+    <!-- REPLACE YOUR TIMETAP LINK HERE -->
     <a href="https://YOUR_TIMETAP_LINK_HERE.timetap.com" class="btn timetap-btn">✅ Go to Registration</a>
 
-    <p style="font-size: 10px; color: #ccc; margin-top: 20px;">System Version 2.2 (Rotation Added)</p>
     <canvas id="canvas" width="440" height="704" style="display:none;"></canvas>
 </div>
 
@@ -147,7 +165,7 @@
     
     const boxW = 220; const boxH = 352;
     let baseW = 0, baseH = 0, pX = 0, pY = 0, pW = 0, pH = 0;
-    let pRotation = 0; /* New variable for tracking angle */
+    let pRotation = 0; 
     let isDrag = false, startX, startY;
 
     document.getElementById('bg-input').onchange = (e) => {
@@ -171,7 +189,6 @@
                 else { baseW = boxW; baseH = boxW / ratio; }
                 pW = baseW; pH = baseH; pX = (boxW - pW) / 2; pY = (boxH - pH) / 2;
                 
-                // Reset sliders on new upload
                 zoomSlider.value = 1; 
                 rotateSlider.value = 0;
                 pRotation = 0;
@@ -184,7 +201,6 @@
 
     function setCol(c) { bg.style.display = 'none'; tagBox.style.backgroundColor = c; }
 
-    // Zoom Logic
     zoomSlider.oninput = function() {
         if (!photo.src) return;
         let scale = parseFloat(this.value);
@@ -193,7 +209,6 @@
         pW = nW; pH = nH; updateView();
     };
 
-    // Rotate Logic
     rotateSlider.oninput = function() {
         if (!photo.src) return;
         pRotation = parseFloat(this.value);
@@ -250,11 +265,8 @@
         
         if (photo.style.display === 'block') { 
             ctx.save();
-            // Move canvas drawing origin to the center of the photo
             ctx.translate((pX + pW / 2) * 2, (pY + pH / 2) * 2);
-            // Rotate the canvas by the degrees selected
             ctx.rotate(pRotation * Math.PI / 180);
-            // Draw the image offset by half its width/height to center it perfectly on the rotated origin
             ctx.drawImage(photo, -pW, -pH, pW * 2, pH * 2); 
             ctx.restore();
         }
