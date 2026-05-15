@@ -22,12 +22,13 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         
-        /* THE DOG TAG (Recalculated for Fully Curved Top & Bottom) */
+        /* THE DOG TAG (Matched to the photo) */
         /* CSS Size: 220px wide by 352px tall */
         .dog-tag-container {
             width: 220px; 
             height: 352px;
-            border-radius: 110px; /* Exactly half of the width creates a perfect semi-circle top and bottom */
+            /* 45px creates the specific rounded curve seen in the photo */
+            border-radius: 45px; 
             border: 4px solid #bdc3c7;
             margin: 20px auto;
             position: relative;
@@ -62,7 +63,7 @@
             position: absolute;
             top: 20px; bottom: 20px; left: 20px; right: 20px;
             border: 2px dashed rgba(255, 255, 255, 0.7);
-            border-radius: 90px; /* Half of the 180px safe zone width */
+            border-radius: 25px; /* Scaled inner radius */
             z-index: 15;
             pointer-events: none;
             display: none;
@@ -148,7 +149,7 @@
     const help = document.getElementById('help-text');
     const zoomSlider = document.getElementById('zoom-slider');
     
-    // Updated Bounds for new 1.125 x 2 ratio
+    // Bounds for 1.125 x 2 ratio
     const boxW = 220;
     const boxH = 352;
 
@@ -262,11 +263,19 @@
         
         ctx.save();
         ctx.beginPath();
-        // Redrawn for perfect pill shape (radius = 220, which is half of 440)
-        const radius = 220; 
-        ctx.arc(220, 220, radius, Math.PI, 0); 
-        ctx.lineTo(440, 704 - radius);
-        ctx.arc(220, 704 - radius, radius, 0, Math.PI); 
+        
+        // Redrawn with 90px scaled radius to match the photo's curved corners
+        const cornerRadius = 90; 
+        ctx.moveTo(cornerRadius, 0);
+        ctx.lineTo(440 - cornerRadius, 0);
+        ctx.arcTo(440, 0, 440, cornerRadius, cornerRadius);
+        ctx.lineTo(440, 704 - cornerRadius);
+        ctx.arcTo(440, 704, 440 - cornerRadius, 704, cornerRadius);
+        ctx.lineTo(cornerRadius, 704);
+        ctx.arcTo(0, 704, 0, 704 - cornerRadius, cornerRadius);
+        ctx.lineTo(0, cornerRadius);
+        ctx.arcTo(0, 0, cornerRadius, 0, cornerRadius);
+        
         ctx.closePath();
         ctx.clip();
 
